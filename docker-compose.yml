@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  iggy-server:
+    image: apache/iggy:latest
+    container_name: iggy-server
+    ports:
+      - "8080:8080"  # HTTP
+      - "8090:8090"  # TCP
+      - "3000:3000"  # QUIC
+    environment:
+      - IGGY_LOG=info
+    cap_add:
+      - SYS_NICE
+    security_opt:
+      - seccomp:unconfined
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - iggy-data:/var/lib/iggy
+    networks:
+      - iggy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  iggy-data:
+
+networks:
+  iggy-network:
+    driver: bridge
